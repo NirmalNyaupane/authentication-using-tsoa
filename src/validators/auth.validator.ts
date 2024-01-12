@@ -1,6 +1,7 @@
 import {
     IsEmail,
     IsEnum,
+    IsJWT,
     IsNotEmpty,
     IsString,
     IsStrongPassword,
@@ -62,10 +63,17 @@ import { UserRole } from "../constants/enum";
     @IsStrongPassword()
     password:string;
   }
+
+  class GenerateAccessToken{
+    @IsNotEmpty()
+    @IsJWT()
+    refreshToken:string
+  }
   export {
     EmailVerificationValidatior,
     InitializePasswordResetValidator,
     RegisterUserValidation,
     FinalizePasswordResetValidator,
-    LoginValidator
+    LoginValidator, 
+    GenerateAccessToken
   };

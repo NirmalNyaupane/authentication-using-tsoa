@@ -180,6 +180,18 @@
 				],
 				"type": "object",
 				"additionalProperties": false
+			},
+			"GenerateAccessToken": {
+				"properties": {
+					"refreshToken": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"refreshToken"
+				],
+				"type": "object",
+				"additionalProperties": false
 			}
 		},
 		"securitySchemes": {}
@@ -458,6 +470,46 @@
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/LoginValidator"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/auth/generate-access-token": {
+			"post": {
+				"operationId": "GenerateAccessToken",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"refreshToken": {},
+										"accessToken": {}
+									},
+									"required": [
+										"refreshToken",
+										"accessToken"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Authentication"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/GenerateAccessToken"
 							}
 						}
 					}

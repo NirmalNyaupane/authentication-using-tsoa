@@ -22,8 +22,8 @@ const generateAccessToken = (userId: string, role: UserRole) => {
 }
 
 const generateRefreshToken = (userId: string) => {
-    return jwt.sign({ sub: userId}, EnvConfiguration.ACCESS_TOKEN_SECRET ?? "", {
-        expiresIn: EnvConfiguration.ACCESS_TOKEN_EXPIRY
+    return jwt.sign({ sub: userId}, EnvConfiguration.REFRESH_TOKEN_SECRET ?? "", {
+        expiresIn: EnvConfiguration.REFRESH_TOKEN_EXPIRY
     })
 }
 

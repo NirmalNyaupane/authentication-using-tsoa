@@ -1,14 +1,14 @@
-import { Body, Controller, Get, Middlewares, Path, Post, Query, Request, Route, Tags } from "tsoa";
 import express from 'express';
-import { FinalizePasswordResetValidator, InitializePasswordResetValidator, LoginValidator, RegisterUserValidation } from "../../validators/auth.validator";
-import userService from "../../services/auth/auth.service";
-import { generateAccessToken, generateHashValue, generateRefreshToken, generateToken, verifyHashValue } from "../../utils/helper";
-import tokenService from "../../services/token/token.service";
-import { emailVerificationMailgenContent, forgotPasswordMailgenContent, sendEmail } from "../../utils/mail.util";
+import { Body, Controller, Get, Middlewares, Path, Post, Request, Route, Tags } from "tsoa";
 import { EnvConfiguration } from "../../config/env.config";
-import authService from "../../services/auth/auth.service";
 import { RequestValidator } from '../../middlewares/validator.middleware';
+import { default as authService, default as userService } from "../../services/auth/auth.service";
+import tokenService from "../../services/token/token.service";
+import { generateAccessToken, generateHashValue, generateRefreshToken, generateToken, verifyHashValue } from "../../utils/helper";
 import { HTTPStatusCode } from "../../utils/httpStatusCode.util";
+import { emailVerificationMailgenContent, forgotPasswordMailgenContent, sendEmail } from "../../utils/mail.util";
+import { FinalizePasswordResetValidator, GenerateAccessToken, InitializePasswordResetValidator, LoginValidator, RegisterUserValidation } from "../../validators/auth.validator";
+import jwt from 'jsonwebtoken';
 @Route("auth")
 @Tags("Authentication")
 export class AuthController extends Controller {
@@ -139,9 +139,9 @@ export class AuthController extends Controller {
                 throw new Error("Internal server error")
             }
             this.setStatus(HTTPStatusCode.BAD_REQUEST)
-            return {message:"Email is not verified, please check your email for verification", isVerified:false}
+            return { message: "Email is not verified, please check your email for verification", isVerified: false }
         }
-       
+
 
         const isPasswordCorrect = await verifyHashValue(reqBody.password, user.password);
         if (!isPasswordCorrect) {
@@ -151,8 +151,51 @@ export class AuthController extends Controller {
         const accessToken = generateAccessToken(user.id, user.role);
         const refreshToken = generateRefreshToken(user.id);
 
+        //save refreshToken on 
+        const refreshTokenResponse = await tokenService.insertRefreshToken(refreshToken, user);
+        if (refreshTokenResponse) {
+            return { id: user.id, isVerified: user.isVerified, accessToken, refreshToken, role: user.role };
 
-        return { id: user.id, isVerified: user.isVerified, accessToken, refreshToken, role: user.role };
+        } else {
+            this.setStatus(500)
+            throw new Error("Internal server error")
+        }
+    }
+
+
+    //generate accesstoken 
+    @Post("/generate-access-token")
+    @Middlewares(RequestValidator.validate(GenerateAccessToken))
+    async generateAccessToken(@Body() body: GenerateAccessToken) {
+        //decode the refresh token 
+        try {
+            const decodedToken = jwt.verify(body.refreshToken, EnvConfiguration.REFRESH_TOKEN_SECRET ?? "");
+            //@ts-ignore
+            const user = await authService.findUserById(decodedToken.sub ?? "");
+            if (!user) {
+                throw new Error("Invalid refresh token ")
+            }
+
+            const refreshToken = await tokenService.findRefreshToken(user);
+            if(body.refreshToken!==refreshToken?.refreshToken){
+                throw new Error("refresh token is not matched")
+            }
+            //generate access token and refresh token 
+            const accessToken = generateAccessToken(user.id, user.role);
+            const newRefreshToken = generateRefreshToken(user.id);
+
+            //save refresh token into db
+            const refreshTokenResponse = await tokenService.insertRefreshToken(newRefreshToken, user);
+            if(refreshTokenResponse){
+                return {accessToken, refreshToken:newRefreshToken}
+            }else{
+                this.setStatus(HTTPStatusCode.INTERNAL_SERVER_ERROR)
+                throw new Error("Internal server error");
+            }
+        } catch (e) {
+            this.setStatus(HTTPStatusCode.UNAUTHORIZED);
+            throw new Error("refresh token is expired or invalid")
+        }
     }
 
 }

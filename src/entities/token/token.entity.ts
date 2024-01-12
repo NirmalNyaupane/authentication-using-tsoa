@@ -17,11 +17,8 @@ export class Token extends CommonEntity {
     forgetPasswordExpiry: Date;
 
     @Column({ nullable: true })
-    refreshToken: string
-
-    @Column({ nullable: true, type: "timestamp" })
-    refreshTokenExpiry: Date
-
+    refreshToken: string;
+    
     @OneToOne(() => User)
     @JoinColumn()
     user: User

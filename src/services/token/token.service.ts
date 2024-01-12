@@ -89,12 +89,12 @@ class TokenService {
         return findToken;
     }
 
-    async insert(hashToken: string, user: User) {
+    async insertRefreshToken(refreshToken: string, user: User) {
         //token exits or not 
         //if token exits update the token
         const token = await Token.createQueryBuilder("token")
             .leftJoin("token.user", "user")
-            .select(["token.forgetPassword", "token.id"])
+            .select(["token.refreshToken", "token.id"])
             .where("user.email=:email", {
                 email: user.email,
             })
@@ -102,17 +102,28 @@ class TokenService {
 
         if (token) {
             return await Token.update({ id: token?.id }, {
-                forgetPassword: hashToken, forgetPasswordExpiry
-                    : Constant.EMAIL_VERIFICATION_EXPIRY
+                refreshToken: refreshToken
             })
         }
 
         //if not create a token 
         const newToken = new Token();
-        newToken.forgetPassword = hashToken;
-        newToken.forgetPasswordExpiry = Constant.EMAIL_VERIFICATION_EXPIRY;
+        newToken.refreshToken = refreshToken;
         newToken.user = user;
         return await Token.save(newToken);
+    }
+
+
+    async findRefreshToken(user:User) {
+        const findToken = await Token.createQueryBuilder("token")
+            .leftJoin("token.user", "user")
+            .select("token.refreshToken")
+            .where("user.email=:email", {
+                email: user.email,
+            })
+            .getOne();
+
+        return findToken;
     }
 }
 
