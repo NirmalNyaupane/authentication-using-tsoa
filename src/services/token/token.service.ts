@@ -38,12 +38,15 @@ class TokenService {
                 email: user.email,
             })
             .getOne();
-
+        console.log(token);
         if (token) {
-            return await Token.update({ id: token?.id }, {
+            const res =  await Token.update({ id: token?.id }, {
                 forgetPassword: hashToken, forgetPasswordExpiry
                     : Constant.EMAIL_VERIFICATION_EXPIRY
             })
+
+            console.log(res)
+            return res;
         }
 
         //if not create a token 

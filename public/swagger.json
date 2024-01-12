@@ -393,27 +393,55 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"properties": {
-										"refreshToken": {},
-										"accessToken": {},
-										"isVerified": {
-											"type": "boolean",
-											"enum": [
-												true
+									"anyOf": [
+										{
+											"properties": {
+												"role": {},
+												"refreshToken": {},
+												"accessToken": {},
+												"id": {},
+												"isVerified": {
+													"type": "boolean"
+												},
+												"message": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"isVerified",
+												"message"
 											],
-											"nullable": false
+											"type": "object"
 										},
-										"id": {
-											"type": "string"
+										{
+											"properties": {
+												"message": {},
+												"role": {
+													"$ref": "#/components/schemas/UserRole"
+												},
+												"refreshToken": {},
+												"accessToken": {},
+												"isVerified": {
+													"type": "boolean",
+													"enum": [
+														true
+													],
+													"nullable": false
+												},
+												"id": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"role",
+												"refreshToken",
+												"accessToken",
+												"isVerified",
+												"id"
+											],
+											"type": "object"
 										}
-									},
-									"required": [
-										"refreshToken",
-										"accessToken",
-										"isVerified",
-										"id"
-									],
-									"type": "object"
+									]
 								}
 							}
 						}

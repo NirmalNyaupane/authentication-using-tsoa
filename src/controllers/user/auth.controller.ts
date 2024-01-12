@@ -8,6 +8,7 @@ import { emailVerificationMailgenContent, forgotPasswordMailgenContent, sendEmai
 import { EnvConfiguration } from "../../config/env.config";
 import authService from "../../services/auth/auth.service";
 import { RequestValidator } from '../../middlewares/validator.middleware';
+import { HTTPStatusCode } from "../../utils/httpStatusCode.util";
 @Route("auth")
 @Tags("Authentication")
 export class AuthController extends Controller {
@@ -49,7 +50,7 @@ export class AuthController extends Controller {
             throw new Error("Token is not found or expired")
         }
 
-        const isTokenCorrect = verifyHashValue(token, tokenResponse.emailVerification);
+        const isTokenCorrect = await verifyHashValue(token, tokenResponse.emailVerification);
 
         if (!isTokenCorrect) {
             throw new Error("Token is incorrect");
@@ -100,7 +101,7 @@ export class AuthController extends Controller {
             throw new Error("Token is not found or expired")
         }
 
-        const isTokenCorrect = verifyHashValue(token, tokenResponse.forgetPassword);
+        const isTokenCorrect = await verifyHashValue(token, tokenResponse.forgetPassword);
         if (!isTokenCorrect) {
             throw new Error("Invalid token")
         }
@@ -134,15 +135,16 @@ export class AuthController extends Controller {
                     subject: "Email verification",
                     mailgenContent: emailVerificationMailgenContent(user.fullName, `${EnvConfiguration.BASE_URL}/auth/email-verification/${user.id}/${emailValidationToken}`)
                 })
-            }else{
+            } else {
                 throw new Error("Internal server error")
             }
-
-            throw new Error("Email is not verified please check your email for verification")
+            this.setStatus(HTTPStatusCode.BAD_REQUEST)
+            return {message:"Email is not verified, please check your email for verification", isVerified:false}
         }
+       
 
-        const isPasswordCorrect = verifyHashValue(reqBody.password, user.password);
-        if(!isPasswordCorrect){
+        const isPasswordCorrect = await verifyHashValue(reqBody.password, user.password);
+        if (!isPasswordCorrect) {
             throw new Error("Invalid credentials")
         }
 
@@ -150,7 +152,7 @@ export class AuthController extends Controller {
         const refreshToken = generateRefreshToken(user.id);
 
 
-        return {id:user.id, isVerified:user.isVerified, accessToken, refreshToken};
+        return { id: user.id, isVerified: user.isVerified, accessToken, refreshToken, role: user.role };
     }
 
 }
