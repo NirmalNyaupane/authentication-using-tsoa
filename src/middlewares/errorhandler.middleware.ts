@@ -9,19 +9,19 @@ const errorHandler = (
 ) => {
   // typeorm
   if (err instanceof QueryFailedError) {
-    return res.status(500).send({
+    return res.status(500).json({
       status: "error",
       message: "Query Error in DB",
     });
     // tsoa
   } else if (err instanceof ValidateError) {
-    return res.status(500).send({
+    return res.status(500).json({
       status: "error",
       message: err.fields,
     });
   }
   // for all remaining errors.
-  return res.status(500).send({
+  return res.status(500).json({
     status: "error",
     message: err.message,
   });

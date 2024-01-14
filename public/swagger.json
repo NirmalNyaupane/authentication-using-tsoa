@@ -194,7 +194,13 @@
 				"additionalProperties": false
 			}
 		},
-		"securitySchemes": {}
+		"securitySchemes": {
+			"jwt": {
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "JWT"
+			}
+		}
 	},
 	"info": {
 		"title": "rest-nodejs-starter",
@@ -206,15 +212,77 @@
 	},
 	"paths": {
 		"/user": {
-			"post": {
+			"get": {
 				"operationId": "RegisterUser",
 				"responses": {
 					"200": {
 						"description": "Ok",
 						"content": {
 							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"tags": [
+					"User"
+				],
+				"security": [
+					{
+						"jwt": [
+							"ADMIN",
+							"USER"
+						]
+					}
+				],
+				"parameters": []
+			}
+		},
+		"/user/all": {
+			"get": {
+				"operationId": "GetAllUser",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
 								"schema": {
-									"properties": {},
+									"properties": {
+										"totalCount": {
+											"type": "number",
+											"format": "double"
+										},
+										"lastPage": {
+											"type": "number",
+											"format": "double"
+										},
+										"currentPage": {
+											"type": "number",
+											"format": "double"
+										},
+										"nextPage": {
+											"type": "number",
+											"format": "double"
+										},
+										"prevPage": {
+											"type": "number",
+											"format": "double"
+										},
+										"data": {
+											"items": {
+												"$ref": "#/components/schemas/User"
+											},
+											"type": "array"
+										}
+									},
+									"required": [
+										"totalCount",
+										"lastPage",
+										"currentPage",
+										"nextPage",
+										"prevPage",
+										"data"
+									],
 									"type": "object"
 								}
 							}
@@ -222,10 +290,51 @@
 					}
 				},
 				"tags": [
-					"User Routes"
+					"User"
 				],
-				"security": [],
-				"parameters": []
+				"security": [
+					{
+						"jwt": [
+							"ADMIN"
+						]
+					}
+				],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "search",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "role",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/UserRole"
+						}
+					}
+				]
 			}
 		},
 		"/auth/register-user": {

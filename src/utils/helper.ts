@@ -15,6 +15,12 @@ const verifyHashValue = async (plainText: string, hashValue: string) => {
     return await bcrypt.compare(plainText, hashValue);
 }
 
+/**
+ * 
+ * @param userId it is id of user
+ * @param role It is a roel of user
+ * @returns Access token of user
+ */
 const generateAccessToken = (userId: string, role: UserRole) => {
     return jwt.sign({ sub: userId, role: role }, EnvConfiguration.ACCESS_TOKEN_SECRET ?? "", {
         expiresIn: EnvConfiguration.ACCESS_TOKEN_EXPIRY

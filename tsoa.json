@@ -10,6 +10,13 @@
   "spec": {
     "outputDirectory": "public",
     "specVersion": 3,
+    "securityDefinitions": {
+      "jwt": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"  
+      }
+    },
     "spec": {
       "servers": [
         {
@@ -20,6 +27,7 @@
     }
   },
   "routes": {
-    "routesDir": "src/routes"
+    "routesDir": "src/routes",
+    "authenticationModule": "src/middlewares/authentication.middleware.ts"
   }
 }

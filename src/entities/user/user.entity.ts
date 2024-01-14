@@ -1,8 +1,7 @@
-import { BeforeInsert, BeforeUpdate, Column, Entity, JoinColumn, OneToOne } from "typeorm";
+import { Column, Entity, JoinColumn, OneToOne } from "typeorm";
+import { UserRole } from "../../constants/enum";
 import { CommonEntity } from "../common/common.entity";
 import { Media } from "../media/media.entity";
-import { UserRole } from "../../constants/enum";
-import bcrypt from 'bcrypt';
 @Entity()
 export class User extends CommonEntity {
     @Column({nullable:false})
