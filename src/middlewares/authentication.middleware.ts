@@ -11,9 +11,12 @@ export function expressAuthentication(
 ) {
 
     if (securityName === "jwt") {
-        const token = request.headers.authorization?.replace("Bearer ", "");
-
+        const authenticationHeader = request.headers?.authorization?.split(" ");
+        const token = authenticationHeader?.[1];
         return new Promise((resolve, reject) => {
+            if (authenticationHeader?.[0] !== "Bearer") {
+                reject(new Error("Unauthorized"))
+            }
             if (!token) {
                 reject(new Error("Unauthorized"));
             }
@@ -24,7 +27,7 @@ export function expressAuthentication(
                     const user = userService.findUserById(decoded.sub);
                     if (scopes) {
                         if (!scopes.includes(decoded?.role)) {
-                            reject(new Error("Forbbiden resource"));
+                            reject(new Error("Forbidden resource"));
                         }
 
                     }
